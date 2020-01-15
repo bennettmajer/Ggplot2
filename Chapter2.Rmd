@@ -1,0 +1,119 @@
+---
+title: "Chapter2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###### ggplot2: Chapter 2 ######
+
+```{r}
+rm(list = ls())
+setwd("~/Documents/Ggplot2/")
+require(ggplot2)
+require(dplyr)
+```
+
+The three componets of every plot:
+Data - The physical data that underlies the plot.
+Aesthetics - The aesthetic mappings between the variables in the data and the visual properties.
+Geoms - A layer which describes observations of the data.
+
+```{r}
+ggplot(mpg, aes(x=displ, y=hwy)) +
+  geom_point()
+```
+
+For instance, this plot has:
+Data - the mpg dataset.
+Aesthetics - choosing the x and y axis as they are.
+Layer - points to describe the location of each observation within our mapping.
+
+
+__Exercises__
+
+1. How would you describe the relationship between cty and hwy? Do you
+have any concerns about drawing conclusions from that plot?
+```{r}
+ggplot(mpg, aes(cty, hwy)) +
+  geom_point()
+```
+Strong positive correlation.
+
+2. What does ggplot(mpg, aes(model, manufacturer)) + geom_point() show?
+Is it useful? How could you modify the data to make it more informative?
+```{r}
+ggplot(mpg, aes(model, manufacturer)) +
+  geom_point()
+```
+This plot shows us the car manufacturer for each model name. This is not a useful. A table or list would be better.
+
+3. Describe the data, aes, and layers for each of the following plots.
+```{r}
+ggplot(mpg, aes(cty, hwy)) + 
+  geom_point()
+ggplot(diamonds, aes(carat, price)) + 
+  geom_point()
+ggplot(economics, aes(date, unemploy)) + 
+  geom_line()
+ggplot(mpg, aes(cty)) + 
+  geom_histogram()
+```
+_1._ Relationship of city mileage to highway mileage.
+_2._ Relationship of diamond carat to price.
+_3._ Unemployment over time.
+_4._ Distribution of city gas mileage for all models.
+
+Adding attributes in the main plot aes() allows the plot to color/shape/group by value.
+
+```{r}
+ggplot(mpg, aes(displ, hwy, color=class, size=cyl)) + 
+  geom_point()
+```
+
+Adding attributes in the geom() will alter that individual layer.
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(color="blue")
+```
+
+__Exercises__
+
+1. Experiment with the colour, shape and size aesthetics. What happens when you map them to continuous values? What about categorical values? What happens when you use more than one aesthetic in a plot?
+```{r}
+str(mpg)
+ggplot(mpg, aes(trans, class, color=hwy)) +
+  geom_point()
+```
+When you use color for a continuous variable, you get a gradient with lighter colors representing higher values.
+
+2. What happens if you map a continuous variable to shape? Why? What
+happens if you map trans to shape? Why?
+```{r}
+ggplot(mpg, aes(hwy, cty, shape=trans)) + 
+  geom_point()
+```
+We run out of shapes and the plot is meaningless.
+
+3. How is drive train related to fuel economy? How is drive train related to
+engine size and class?
+```{r}
+head(mpg)
+ggplot(mpg, aes(drv, cty)) +
+  geom_boxplot()
+ggplot(mpg, aes(cty, displ, color=drv)) +
+  geom_point()
+```
+
+You can display categorical data also by facetting. This makes identical plots for each category.
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  facet_wrap(~class)
+```
+
+__Exercises__
