@@ -117,3 +117,135 @@ ggplot(mpg, aes(displ, hwy)) +
 ```
 
 __Exercises__
+1. What happens if you try to facet by a continuous variable like hwy? What about cyl? What’s the key difference?
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  facet_wrap(~cty)
+```
+The main difference is that it breaks off a new chart for each value of the continuous variable present in the data.
+
+2. Use facetting to explore the 3-way relationship between fuel economy, engine size, and number of cylinders. How does facetting by number of cylinders change your assessement of the relationship between engine size and fuel economy?
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  facet_wrap(~cyl)
+```
+Doesn't really change anything.
+
+3. Read the documentation for facet_wrap(). What arguments can you use to control how many rows and columns appear in the output?
+nrow, ncol
+
+4. What does the scales argument to facet_wrap() do? When might you use it?
+It allows the scales to be variable between the different plots. It would be useful if you have one variable with far different values than the others. If you allow the scales to be dependent on the data, you can get more detail in each plot.
+
+```{r}
+ggplot(mpg, aes(cty, hwy)) +
+  geom_smooth() +
+  geom_point()
+
+ggplot(mpg, aes(drv, cty)) +
+  geom_boxplot()
+
+ggplot(mpg, aes(cty)) +
+  geom_histogram()
+
+ggplot(mpg, aes(drv)) +
+  geom_bar()
+
+ggplot(mpg, aes(cty, hwy)) +
+  geom_path()
+```
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  geom_smooth(method = "auto", span = .3)
+```
+
+```{r}
+ggplot(mpg, aes(drv, hwy)) +
+  geom_jitter()
+
+ggplot(mpg, aes(drv, hwy)) +
+  geom_violin()
+```
+
+```{r}
+ggplot(mpg, aes(displ, color=drv)) +
+  geom_freqpoly(binwidth=0.5)
+```
+
+###Time Series
+
+```{r}
+ggplot(economics, aes(date, uempmed)) +
+  geom_line()
+```
+
+```{r}
+year = function(x) {
+  as.POSIXlt(x)$year + 1900
+}
+ggplot(economics, aes(unemploy / pop, uempmed)) + 
+  geom_path(colour = "grey50") + 
+  geom_point(aes(colour = year(date)))
+```
+
+__Exercises__
+
+1. What’s the problem with the plot created by ggplot(mpg, aes(cty, hwy)) + geom_point()? Which of the geoms described above is most effective at remedying the problem?
+```{r}
+ggplot(mpg, aes(cty, hwy)) +
+  geom_point()
+```
+Because the values are discrete, there is potential overlap but we cannot see it in this chart.
+
+Here is a better choice.
+```{r}
+ggplot(mpg, aes(cty, hwy)) +
+  geom_jitter()
+```
+
+2. One challenge with ggplot(mpg, aes(class, hwy)) + geom_boxplot() is that the ordering of class is alphabetical, which is not terribly useful. How could you change the factor levels to be more informative? Rather than reordering the factor by hand, you can do it automatically based on the data: ggplot(mpg, aes(reorder(class, hwy), hwy)) + geom_boxplot(). What does reorder() do? Read the documentation.
+It reorders the factor levels based on the value of a second variable.
+
+3. Explore the distribution of the carat variable in the diamonds dataset. What binwidth reveals the most interesting patterns?
+```{r}
+ggplot(diamonds, aes(carat)) +
+  geom_histogram(binwidth = .1)
+```
+I think that a binwidth of 0.1 reveals the most interesting patterns. There is a clear uptick in diamonds with carat exactly 1, 1.5 and 2. This signifies an increase in demand for those nice-sized diamonds.
+
+4. Explore the distribution of the price variable in the diamonds data. How does the distribution vary by cut?
+```{r}
+ggplot(diamonds, aes(price, color=cut)) + 
+  geom_freqpoly()
+```
+It seems that premium and very good have similar distributions. Good has a similar shape but fewer diamonds overall. Ideal has a much higher proportion of less expensive diamonds. Fair diamonds interestingly have a very wide and flat distribution.
+
+5. You now know (at least) three ways to compare the distributions of subgroups: geom_violin(), geom_freqpoly() and the colour aesthetic, or geom_histogram() and facetting. What are the strengths and weaknesses of each approach? What other approaches could you try?
+Violin: Strengths (more nuanced idea of distribution, easy to compare). Weaknesses (no notion of scale).  
+Frequency Polygon: Strengths (scale and ease of comparison). Weaknesses (can get cluttered with many categories).
+Histogram: Strengths (easy to understand each category individually). Weaknesses (not as good at comparisons).
+
+6. Read the documentation for geom_bar(). What does the weight aesthetic do?
+```{r}
+ggplot(mpg, aes(class)) +
+  geom_bar(aes(weight = displ))
+
+```
+Instead of counting the total observations per category, it sums the values of the chosen weight variable per category.
+
+7. Using the techniques already discussed in this chapter, come up with three ways to visualise a 2d categorical distribution. Try them out by visualising the distribution of model and manufacturer, trans and class, and cyl and trans.
+```{r}
+mpg$model
+mpg$manufacturer
+ggplot(mpg, aes(model, hwy)) +
+  geom_point() +
+  facet_wrap(~manufacturer)
+
+
+ggplot(mpg, aes(trans, color=class)) +
+  geom_freqpoly()
+```
