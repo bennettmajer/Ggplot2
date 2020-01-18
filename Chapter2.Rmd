@@ -238,14 +238,12 @@ ggplot(mpg, aes(class)) +
 Instead of counting the total observations per category, it sums the values of the chosen weight variable per category.
 
 7. Using the techniques already discussed in this chapter, come up with three ways to visualise a 2d categorical distribution. Try them out by visualising the distribution of model and manufacturer, trans and class, and cyl and trans.
+
 ```{r}
-mpg$model
-mpg$manufacturer
-ggplot(mpg, aes(model, hwy)) +
-  geom_point() +
-  facet_wrap(~manufacturer)
-
-
-ggplot(mpg, aes(trans, color=class)) +
-  geom_freqpoly()
+ggplot(mpg, aes(cty, hwy)) +
+  geom_jitter() +
+  xlab("city mpg") +
+  ylab("highway mpg") +
+  ylim(10,40) +
+  xlim(10,NA)
 ```
