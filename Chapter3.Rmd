@@ -15,6 +15,8 @@ setwd("~/Documents/Ggplot2/")
 require(ggplot2)
 require(dplyr)
 require(nlme)
+require(maps)
+require(USAboundaries)
 ```
 
 We want each layer of the plot to have a purpose. There are three general purposes for a layer.
@@ -90,4 +92,50 @@ library(babynames)
 hadley <- dplyr::filter(babynames, name == "Hadley")
 ggplot(hadley, aes(year, n, color=sex)) +
 geom_line()
+```
+
+While there is no distinct 3D plotting in ggplot, we can use 2D plots to simulate 3D surfaces.
+
+```{r}
+ggplot(faithfuld, aes(eruptions, waiting)) +
+  geom_contour(aes(z=density, color=..level..))
+
+ggplot(faithfuld, aes(eruptions, waiting)) +
+  geom_raster(aes(fill=density))
+
+ggplot(sample_n(faithfuld, 500), aes(eruptions, waiting)) +
+  geom_point(aes(size = density), alpha = 1/3) +
+  scale_size_area()
+```
+
+We can also visualize spatial data using maps.
+
+```{r}
+wi_counties = map_data("county", "wisconsin") %>%
+  select(lon=long, lat, group, id=subregion)
+
+head(wi_counties)
+
+ggplot(wi_counties, aes(lon, lat)) +
+  geom_polygon(aes(group=group), fill=NA, color="grey") +
+  coord_quickmap()
+```
+
+```{r}
+wi_cities <- maps::us.cities %>%
+  tbl_df() %>%
+  filter(country.etc == "WI") %>%
+  select(-country.etc, lon = long) %>%
+  arrange(desc(pop))
+wi_cities
+
+ggplot(wi_cities, aes(lon, lat)) +
+  geom_polygon(aes(group=group), wi_counties, fill=NA, color="grey") +
+  geom_point(aes(size = pop)) +
+  scale_size_area() +
+  coord_quickmap()
+```
+
+```{r}
+
 ```
