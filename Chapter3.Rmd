@@ -122,6 +122,9 @@ ggplot(wi_counties, aes(lon, lat)) +
 ```
 
 ```{r}
+wi_counties <- map_data("county", "wisconsin") %>%
+  select(lon = long, lat, group, id = subregion)
+
 wi_cities <- maps::us.cities %>%
   tbl_df() %>%
   filter(country.etc == "WI") %>%
@@ -137,5 +140,124 @@ ggplot(wi_cities, aes(lon, lat)) +
 ```
 
 ```{r}
+# area metadata
 
+wi_census = midwest %>% 
+  tbl_df() %>% 
+  filter(state == 'WI') %>%
+  mutate(county = tolower(county)) %>% 
+  select(county, area, poptotal, percwhite, percblack)
+
+census_counties = left_join(wi_census, wi_counties, by = c("county" = "id"))
+
+ggplot(census_counties, aes(lon, lat, group = county)) +
+  geom_polygon(aes(fill = poptotal)) +
+  coord_quickmap()
 ```
+
+```{r}
+y = c(18,11,16)
+df = data.frame(x=1:3, y=y, se = c(1.2,.5,1))
+
+p = ggplot(df, aes(x,y,ymin=y-se, ymax=y+se))
+p+geom_crossbar()
+p+geom_pointrange()
+p+geom_smooth(stat="identity")
+```
+
+```{r}
+ggplot(midwest, aes(percwhite, percbelowpoverty)) +
+  geom_point(aes(size=poptotal/1e6)) +
+  scale_size_area("population\n(millions", breaks=c(.5,1,2,4)) +
+  geom_smooth(aes(weight=poptotal), method=lm, size=1)
+```
+
+```{r}
+ggplot(midwest, aes(percbelowpoverty)) +
+  geom_histogram(aes(weight=poptotal))
+```
+
+```{r}
+head(diamonds)
+```
+
+Visualizing larger data sets like the diamonds set for instance can be tricky.
+
+```{r}
+ggplot(diamonds, aes(depth)) + 
+  geom_histogram(binwidth=0.1) + #Remember to set a custom binwidth. Each data set requires a hand picked binwidth.
+  xlim(55,70)
+```
+
+Comparing groups:
+
+```{r}
+ggplot(diamonds, aes(depth)) +
+  geom_histogram(binwidth=0.1) +
+  xlim(55,70) +
+  facet_wrap(~cut)
+
+ggplot(diamonds, aes(depth)) +
+  geom_freqpoly(aes(color=cut), binwidth=0.1) +
+  xlim(55,70) 
+
+ggplot(diamonds, aes(depth)) +  #This one is weird but does a good job showing the breakdown at a given point on the x axis
+  geom_histogram(aes(color=cut), binwidth=0.1, position="fill") +
+  xlim(55,70) 
+
+ggplot(diamonds, aes(depth, fill=cut, color=cut)) +
+  geom_density(alpha=0.2) +
+  xlim(55,70)
+```
+
+_Exercises_
+
+1. What binwidth tells you the most interesting story about the distribution of carat?
+```{r}
+ggplot(diamonds, aes(carat)) +
+  geom_histogram(binwidth=.01)
+```
+
+I think a very narrow binwidth tells the most interesting story. You see almost an asymptote at the many of the nicely numbered carat value and a tail off following. This shows that it is very rare to cut a diamond to be just below a nice number.
+
+2. Draw a histogram of price. What interesting patterns do you see?
+```{r}
+ggplot(diamonds, aes(price)) +
+  geom_histogram(binwidth=500)
+```
+
+In general there is a very gradual tail off. About the same number of diamonds exist in the 10000 price range as in the 17000 price range. Looks like exponential growth as it goes towards 0 dollars.
+
+3. How does the distribution of price vary with clarity?
+```{r}
+ggplot(diamonds, aes(clarity, price)) +
+  geom_violin()
+```
+
+This is very odd. It seems like as the clarity gets greater, the average price lowers. All clarity levels have outliers that stretch beyond 15000 dollars.
+
+4. Overlay a frequency polygon and density plot of depth. What computed variable do you need to map to y to make the two plots comparable?
+```{r}
+# ggplot(diamonds, aes(depth)) +
+#   geom_freqpoly() +
+#   geom_density(aes(density*count))
+```
+
+```{r}
+# dealing with overplotting
+
+# smaller datasets
+df = data.frame(x=rnorm(2000), y=rnorm(2000))
+ggplot(df, aes(x,y)) +
+  geom_point() #overplotted
+ggplot(df, aes(x,y)) +
+  geom_point(shape=1) #better
+ggplot(df, aes(x,y)) +
+  geom_point(shape=".") #good on small windows, terrible on large screens
+
+
+# larger datasets
+ggplot(df, aes(x,y)) +
+  geom_point(alpha=.3)
+```
+
