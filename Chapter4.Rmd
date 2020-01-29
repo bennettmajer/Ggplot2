@@ -1,0 +1,25 @@
+---
+title: "Chapter 4"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+rm(list = ls())
+setwd("~/Documents/Ggplot2/")
+require(ggplot2)
+require(dplyr)
+require(nlme)
+require(maps)
+require(USAboundaries)
+require(hexbin)
+```
+
+## The Grammar of Graphics
+
+We will take a look at the simple scatterplot. Each point in the scatter plot has a horizontal and vertical position, a size, a shape and a color. These attributes are _aesthetics_.
+Aesthetics can be mapped to the values of variable or to constants.

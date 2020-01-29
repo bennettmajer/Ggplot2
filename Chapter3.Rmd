@@ -17,6 +17,7 @@ require(dplyr)
 require(nlme)
 require(maps)
 require(USAboundaries)
+require(hexbin)
 ```
 
 We want each layer of the plot to have a purpose. There are three general purposes for a layer.
@@ -258,6 +259,17 @@ ggplot(df, aes(x,y)) +
 
 # larger datasets
 ggplot(df, aes(x,y)) +
-  geom_point(alpha=.3)
+  geom_point(alpha=.4)
+
+ggplot(df, aes(x,y)) +
+  geom_hex(bins=10)
+```
+
+```{r}
+ggplot(diamonds, aes(color)) +
+  geom_bar()
+
+ggplot(diamonds, aes(color, price)) +
+  geom_bar(stat = "summary_bin", fun.y=mean)
 ```
 
