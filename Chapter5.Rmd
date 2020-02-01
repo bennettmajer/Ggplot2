@@ -1,0 +1,176 @@
+---
+title: "Chapter5"
+author: "Bennett Majerowski"
+date: "2/1/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(tidyverse)
+```
+
+The goal of ggplot is the provide a framework to make plots through iteration; to be able to build a complex plot layer on top of layer.
+
+Remember from earlier, every plot has:
+  1. Data - the underlying data set
+  2. Aesthetics - the space that we are mapping the data
+  3. Geom - the geometric representation of a datapoint
+  
+Within a geom, there are actually 5 components:
+  1. Mapping - the set of aesthetic mappings specific to this layer. Will be combined with the aesthetic set from the plot defaults.
+  2. Data - a layer dataset to override the  plot dataset
+  3. Geom - the name of the geometric object to draw each observation
+  4. Stat - the statistical transformation to use
+  5. Position - the method to adjust overlapping objects
+  
+__Exercises__
+
+1. Use the result of the code below recreate the pictured plot.
+
+```{r}
+class = mpg %>% 
+  group_by(class) %>% 
+  summarize(n=n(), hwy=mean(hwy))
+
+ggplot(mpg, aes(class, hwy)) +
+  geom_jitter(width=0.1) +
+  geom_point(data=class, aes(class, hwy), color="red", size=4) +
+  geom_text(data=class, aes(class, 10, label=paste("n = ",n, sep="")), size=3)
+```
+
+Aestheics describe how a variable is mapped to visual properties. *Note, never refer to a variable using a $ within aes().
+
+Plot aes() vs layer aes():
+  1. If you only have a layer, then the aes() info can be put either in the plot or the layer and you will get the same chart.
+  2. Conversely, if you have multiple layers, the plot aes() will apply to all layers while the layer aes() will only apply to that layer.
+  
+Setting vs Mapping:
+  1. aes(color=cut) will map the values of the variable "cut" to different colors.
+  2. color=cut will set the color for that layer to a constant
+  
+__Exercises__
+1. Simplify the following plot specifications:
+```{r}
+# bad version
+ggplot(mpg) +
+  geom_point(aes(mpg$displ, mpg$hwy))
+
+# better version
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point()
+```
+
+```{r}
+# bad version
+ggplot() +
+  geom_point(mapping = aes(y = hwy, x = cty), data = mpg) +
+  geom_smooth(data = mpg, mapping = aes(cty, hwy))
+
+# better version
+ggplot(mpg, aes(cty, hwy)) +
+  geom_point() +
+  geom_smooth()
+```
+
+```{r}
+# bad version
+ggplot(diamonds, aes(carat, price)) +
+  geom_point(aes(log(brainwt), log(bodywt)), data = msleep)
+
+# better version
+ggplot(msleep, aes(log(brainwt), log(bodywt))) +
+  geom_point()
+```
+
+2. What does the following code do? Does it work? Does it make sense? Why/why not?
+```{r}
+ggplot(mpg) +
+  geom_point(aes(class, cty)) +
+  geom_boxplot(aes(trans, hwy))
+```
+
+This code does not make sense because it uses one layer with x axis being car class and the other layer has x axis as transmission type. It is essentially two unrelated plots shoved into the same chart.
+
+3. What happens if you try to use a continuous variable on the x axis in one layer, and a categorical variable in another layer? What happens if you do it in the opposite order?
+```{r}
+ggplot(mpg) +
+  geom_point(aes(class, cty)) +
+  geom_boxplot(aes(hwy, cty))
+```
+
+You cannot plot a categorical layer above a continuous layer. If you plot a continuous layer above a categorical layer, the plot treats the entire continuous layer as one category.
+
+__Exercises__
+1. For each of the plots below, identify the geom used to draw it.
+  a. violin
+  b. point
+  c. hex
+  d. point
+  e. ribbon
+  f. path
+  
+2. For each of the following problems, suggest a useful geom:
+  a. Display how a variable has changed over time - line
+  b. Show the detailed distribution of a single variable - histogram
+  c. Focus attention on the overall trend in a large dataset - smooth
+  d. Draw a map - map or polygon
+  e. Label outlying points - text
+  
+Using the stat parameter, we can recreate one of the above charts without needing two data sets.
+
+```{r}
+ggplot(mpg, aes(class, hwy)) +
+  geom_jitter(width = 0.1) +
+  geom_point(stat = "summary", fun.y = "mean", color="red", size=4)
+```
+
+__Exercises__
+
+1. The code below creates a similar dataset to stat_smooth(). Use the appropriate geoms to mimic the default geom_smooth().
+
+```{r}
+mod <- loess(hwy ~ displ, data = mpg)
+smoothed <- data.frame(displ = seq(1.6, 7, length = 50)) 
+pred <- predict(mod, newdata = smoothed, se = TRUE) 
+smoothed$hwy <- pred$fit
+smoothed$hwy_lwr <- pred$fit - 1.96 * pred$se.fit 
+smoothed$hwy_upr <- pred$fit + 1.96 * pred$se.fit
+
+ggplot(smoothed, aes(displ)) +
+  geom_line(aes(y=hwy)) +
+  geom_ribbon(aes(displ, ymin=hwy_lwr, ymax=hwy_upr), alpha=0.3, fill="blue")
+```
+
+2. What stats were used to create the following plots?
+  a. stat_sum()
+  b. stat_qq()
+  c. stat_summary()
+  
+3. Read the docs for stat_sum() then use geom_count() to create a plot that shows the proportion of cars that have each combination of drv and trans.
+
+```{r}
+ggplot(mpg, aes(drv, trans)) +
+  geom_count()
+```
+
+Position adjustments can tweak the position of elements within a layer. For a bar type chart, we have stack (overlapping bars on top of each other), fill (overlapping bars scaled so the top is at 1), dodge (shift overlapping bars side by side)
+
+__Exercises__
+
+1. When might you use position_nudge()?
+
+You can use this when you want a point label to not overlap the point.
+
+2. Many position adjustments can only be used with a few geoms. For example, you can't stack boxplots or error bars. Why not? What properties must a geom possess in order to be stackable? What properties must it possess to be dodgeable?
+
+A geom that that does not start from y=0 cannot be stackable. A geom is not dodgeable if the x-value is very important. Dodging will alter the x values.
+
+3. Why might you use geom_jitter() instead of geom_count()? What are the advantages and disadvantages of each technique?
+
+If there are a lot of overlapping points, geom_jitter allows a simpler way to spread the points out.
+
+4. When might you use a stacked area plot? What are the advantages and disadvantages compared to a line plot?
+
+Stacking area plots can give the user an idea of the aggregate value with all of the groups together as well as a breakdown per group.
+
