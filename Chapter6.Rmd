@@ -1,0 +1,86 @@
+---
+title: "Chapter 6"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+require(tidyverse)
+```
+
+Scales control the mapping from data to aesthetics. ggplot gives default scales but if you want to override them you can.
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color=class)) +
+  scale_x_continuous("A really awesome x axis label") +
+  scale_y_continuous("An amazingly great y axis label")
+```
+
+Scales are x and y as well as color, size and shape. Naming conventions go as follows:  
+1. scale_
+2. the name of the aes (color, shape, x, etc.)
+3. the name of the scale (continuous, discrete, brewer)
+
+__Exercises__  
+1. What happens if you pair a discrete variable to a continuous scale? What about the opposite?
+```{r}
+ggplot(mpg, aes(trans, hwy)) +
+  scale_x_continuous("cylinders") +
+  geom_point()
+
+ggplot(mpg, aes(trans, hwy)) +
+  scale_y_discrete("cylinders") +
+  geom_point()
+```
+
+If the values for the discrete can be numeric, plotting on a continuous scale will just plot the numeric values of the variables. If the variables are not numeric, then you cannot plot them on a continuous scale.  
+If you have a continuous variable plotted on a discrete scale, then each unique value for that variable will be considered its own class.
+
+2. Simplify the following plot specifications to make them easier to understand.
+```{r}
+ggplot(mpg, aes(displ)) +
+  scale_y_continuous("Highway mpg") +
+  scale_x_continuous() +
+  geom_point(aes(y = hwy))
+
+ggplot(mpg, aes(displ, hwy)) +
+  scale_y_continuous("Highway mpg") +
+  geom_point()
+```
+
+```{r}
+ggplot(mpg, aes(y=displ, x=class)) +
+  scale_y_continuous("Displacement (l)") +
+  scale_x_continuous("Car type") +
+  scale_x_continuous("Type of car") +
+  scale_color_discrete() +
+  geom_point(aes(color=drv)) +
+  scale_color_discrete("Drive\ntrain")
+
+ggplot(mpg, aes(class, displ)) +
+  scale_x_discrete("Type of car") +
+  scale_y_continuous("Displacement (l)") +
+  scale_color_discrete("Drive\ntrain") +
+  geom_point(aes(color=drv))
+```
+
+A guide is the set of labels associated with a certain scale. For instance, a x axis scale will have an axis label, a set of ticks or gridlines, and a set of tick labels. A color scale will have a legend title, key set, and key labels.
+
+In any of the scale functions, the three parameters are the same:
+  1. Name. This is the axis or legend title. Just write it in a text string.
+  2. Breaks. This determines the values that appear as tick marks on the axes or keys on legends.
+  3. Labels. This changes the words that accompany tick marks or keys.
+  
+Shortcut - just use xlab() to alter just the label of the x axis instead of having to use the scale function.
+
+__Exercises__
+
+1. Recreate the following graphic.
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  ylab(expression(paste("Highway (", frac(miles,gallons), ")"))) +
+  scale_x_continuous(labels = scales::unit_format("L", 2)) +
+  geom_point()
+```
